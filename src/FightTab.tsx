@@ -8,7 +8,7 @@ import {
   getMemoryInfo, getMemoryState, rescanMemory,
   getBTRStats, saveBTR, btrPretrain,
   type InferResult, type LoopStatus, type OBSStatus, type AgentStats, type VideoStatus,
-  type BrainInfo, type ReplayScanResult, type ReplayFileMeta, type MemoryInfo, type BTRStats,
+  type BrainInfo, type ReplayScanResult, type MemoryInfo, type BTRStats,
 } from './WeaponizedAPI'
 
 const API = 'http://localhost:5000'
@@ -91,7 +91,7 @@ export default function FightTab() {
   const [selectedMacro, setSelectedMacro] = useState('nlight')
   const [inferResult, setInferResult] = useState<InferResult | null>(null)
   const [trainResult, setTrainResult] = useState<{ loss_policy: number; loss_value: number } | null>(null)
-  const DEMO_OBS = Array(18).fill(0).map((_, i) => parseFloat((Math.random() * 2 - 1).toFixed(3)))
+  const DEMO_OBS = Array(18).fill(0).map(() => parseFloat((Math.random() * 2 - 1).toFixed(3)))
 
   // ── OBS Training Loop state ────────────────────────────────────────────────
   const [loopStatus, setLoopStatus] = useState<LoopStatus | null>(null)

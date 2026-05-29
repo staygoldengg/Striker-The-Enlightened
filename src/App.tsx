@@ -685,10 +685,10 @@ Output a macro as a list of steps (one per line): Press [KEY], Wait [MS]ms, Hold
                 Screen region (pixels) where the Twitch extension overlay is rendered on your monitor.
               </p>
               <div className="settings-grid-4">
-                <label>Top<input type="number" value={ocrRegion.top} onChange={e => setOcrRegion(r => ({ ...r, top: +e.target.value }))} className="bp-input" /></label>
-                <label>Left<input type="number" value={ocrRegion.left} onChange={e => setOcrRegion(r => ({ ...r, left: +e.target.value }))} className="bp-input" /></label>
-                <label>Width<input type="number" value={ocrRegion.width} onChange={e => setOcrRegion(r => ({ ...r, width: +e.target.value }))} className="bp-input" /></label>
-                <label>Height<input type="number" value={ocrRegion.height} onChange={e => setOcrRegion(r => ({ ...r, height: +e.target.value }))} className="bp-input" /></label>
+                <label>Top<input type="number" value={ocrRegion.top} onChange={e => setOcrRegion((r: typeof ocrRegion) => ({ ...r, top: +e.target.value }))} className="bp-input" /></label>
+                <label>Left<input type="number" value={ocrRegion.left} onChange={e => setOcrRegion((r: typeof ocrRegion) => ({ ...r, left: +e.target.value }))} className="bp-input" /></label>
+                <label>Width<input type="number" value={ocrRegion.width} onChange={e => setOcrRegion((r: typeof ocrRegion) => ({ ...r, width: +e.target.value }))} className="bp-input" /></label>
+                <label>Height<input type="number" value={ocrRegion.height} onChange={e => setOcrRegion((r: typeof ocrRegion) => ({ ...r, height: +e.target.value }))} className="bp-input" /></label>
               </div>
             </div>
 

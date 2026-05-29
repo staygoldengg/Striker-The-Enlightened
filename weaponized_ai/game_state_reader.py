@@ -1,3 +1,47 @@
+# ── RL Environment Integration ─────────────────────────────────────────────
+def extract_brawlhalla_state(action=None, reset=False):
+    """
+    Scaffold for RL environment integration.
+    - If reset=True: reset the game state (implement as needed)
+    - If action is not None: send action to the game (implement as needed)
+    - Capture a frame from the game (shared memory, screen capture, etc.)
+    - Return a state dict compatible with BrawlhallaGymEnv
+    """
+    # TODO: Implement game reset logic if needed
+    if reset:
+        # Example: call your reset function or send reset input
+        pass
+
+    # TODO: Implement action sending logic
+    if action is not None:
+        # Example: send action to the game via input bridge
+        pass
+
+    # TODO: Capture a frame from the game
+    # Example: frame = capture_frame_from_shared_memory() or screen grab
+    frame = None  # Replace with actual frame capture
+
+    # If frame capture fails, return a dummy state
+    if frame is None:
+        return {
+            "frame": np.zeros((84, 84), dtype=np.uint8),
+            "player_state": [0]*8,
+            "opponent_state": [0]*8,
+            "map_features": [0, 0],
+            "raw_reward": 0.0,
+        }
+
+    # Extract state from frame
+    state = read_state(frame)
+    # Compose state dict for environment
+    return {
+        "frame": frame,
+        "player_state": state.get("p1_pos", [0, 0]) + [state.get("p1_damage", 0), state.get("p1_stocks", 0), float(state.get("p1_airborne", 0)), float(state.get("p1_weapon", "none") != "none"), 0, 0],
+        "opponent_state": state.get("p2_pos", [0, 0]) + [state.get("p2_damage", 0), state.get("p2_stocks", 0), float(state.get("p2_airborne", 0)), float(state.get("p2_weapon", "none") != "none"), 0, 0],
+        "map_features": [0, 0],  # TODO: fill with real map/platform features
+        "raw_reward": 0.0,  # TODO: compute reward if needed
+        # Add any extra signals as needed
+    }
 # game_state_reader.py
 """
 Reads Brawlhalla game state from a screen frame.

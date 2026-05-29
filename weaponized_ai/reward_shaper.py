@@ -20,7 +20,10 @@ class AlignedRewardShaper:
         # Tracks prior step potentials to compute formal PBRS changes: V(s) - V(s')
         self.prev_potential: float | None = None
 
-    def calculate_step_reward(self, state_dict: Dict[str, Any], raw_env_reward: float) -> float:
+        def calculate_step_reward(self, state_dict: Dict[str, Any], raw_env_reward: float,
+                                                         yolo_opponent_detected: bool = False,
+                                                         image_match_audio_icon: bool = False,
+                                                         shooting_event: bool = False) -> float:
         """
         Calculates potential-based reward adjustments.
         Expected keys in state_dict:
@@ -28,6 +31,10 @@ class AlignedRewardShaper:
           'player_damage', 'opponent_damage', 'player_stocks', 'opponent_stocks'
         Optional event keys:
           'event_player_died', 'event_combo_connected'
+                Optional external signals:
+                    yolo_opponent_detected: bool — if YOLO detected an opponent in this frame
+                    image_match_audio_icon: bool — if audio icon was matched in this frame
+                    shooting_event: bool — if a shooting event was detected in this frame
         """
         # 1. Base Game State Extraction
         p_x = state_dict['player_x']
@@ -72,12 +79,21 @@ class AlignedRewardShaper:
             # Reinforces high learning rate values targeted by Whisper pretraining scripts
             combo_accel_bonus = 2.0
 
-        # 5. Composite Unified Reward Synthesis
+
+        # 5. Additional Reward Sources (YOLO, image matching, shooting)
+        yolo_bonus = 1.0 if yolo_opponent_detected else 0.0
+        audio_icon_bonus = 0.5 if image_match_audio_icon else 0.0
+        shooting_bonus = 1.5 if shooting_event else 0.0
+
+        # 6. Composite Unified Reward Synthesis
         total_shaped_reward = (
             damage_dealt_reward
             + pbrs_delta
             + stock_loss_penalty
             + combo_accel_bonus
+            + yolo_bonus
+            + audio_icon_bonus
+            + shooting_bonus
         )
 
         return float(total_shaped_reward)

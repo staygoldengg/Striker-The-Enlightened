@@ -100,6 +100,7 @@ The system stays running between matches:
 
 ## Architecture Overview
 
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                  Tauri Desktop App  (localhost:1420)                │
@@ -139,6 +140,36 @@ C++ Layer (shm_bridge.cpp / DLL):
                           Sentinel: 0xDEADC0DEFA57FEED
                           feature_vector[48]  ──►  Python SHM reader
 ```
+
+---
+
+## RL Agent Architecture (Final Model)
+
+**Algorithm:**
+- PPO
+- RecurrentPPO
+- A2C
+- DQN
+
+**Model:**
+- CNN
+- CNNLSTM
+
+**Preprocessing:**
+- Framestacking
+
+**Action Space:**
+- MultiDiscrete
+- Discrete
+*(lots of testing with different inputs)*
+
+**Reward/Punishment From:**
+- Text detection (kills, score, health)
+- YOLO object detection (opponent)
+- Image matching (visualized audio icon)
+- Shooting gun
+
+---
 
 ---
 
@@ -293,7 +324,7 @@ The primary online RL agent. Implements Proximal Policy Optimization with the fo
 
 1. Collect `N` steps into the experience buffer.
 2. Compute GAE advantages (λ=0.95) with bootstrapped value baseline.
-3. Normalise advantages to zero-mean unit-variance per mini-batch.
+3. Normalize advantages to zero-mean unit-variance per mini-batch.
 4. Run 4 gradient passes per collected batch with clipped surrogate objective (ε=0.2).
 5. Entropy bonus (coefficient=0.01) prevents early collapse.
 6. Shared AdamW optimizer (lr=3e-4, ε=1e-5), gradient norm clipped at 0.5.
@@ -1584,7 +1615,7 @@ Knowledge base management:
 **5. YouTube Learner**
 Video ingestion panel:
 - URL input + Ingest button
-- Live progress bar with stage label (DOWNLOAD / EXTRACT / INFER / FILTER / TRANSCRIBE / STORE)
+- Live progress bar with stage label (DOWNLOAD → EXTRACT → INFER → FILTER → TRANSCRIBE → STORE)
 - Transitions generated counter
 - Pretrain trigger once ingest completes
 
@@ -1768,7 +1799,7 @@ Striker-The-Enlightened/
 |   +-- IntelTab.tsx              # Game intel + opponent profiling
 |   +-- SimulationTab.tsx         # Offline simulation runner
 |   +-- StrategyTab.tsx           # Strategy engine visualizer
-|   +-- BackendBridge.tsx         # Tauri <-> backend health monitor
+|   +-- BackendBridge.tsx         # Tauri ↔ backend health monitor
 |   +-- LatencyMonitor.tsx        # API round-trip latency display
 |   +-- spatialSafety.ts          # Blastzone boundary safety checks
 +-- src-tauri/                    # Tauri native shell

@@ -1,3 +1,37 @@
+# --- MultiDiscrete PolicyNet ---
+class MultiDiscretePolicyNet(nn.Module):
+    def __init__(self, obs_dim: int, action_dims: list):
+        super().__init__()
+        self.action_dims = action_dims
+        self.shared = _mlp(obs_dim, 256)
+        self.heads = nn.ModuleList([
+            nn.Linear(256, n) for n in action_dims
+        ])
+
+    def forward(self, x: torch.Tensor):
+        h = self.shared(x)
+        return [head(h) for head in self.heads]
+
+    def act(self, obs: torch.Tensor):
+        logits = self.forward(obs)
+        actions = []
+        log_probs = []
+        for l in logits:
+            dist = torch.distributions.Categorical(logits=l)
+            a = dist.sample()
+            actions.append(a.item())
+            log_probs.append(dist.log_prob(a))
+        return actions, sum(log_probs)
+
+    def evaluate(self, obs: torch.Tensor, acts: torch.Tensor):
+        logits = self.forward(obs)
+        log_probs = []
+        entropies = []
+        for i, l in enumerate(logits):
+            dist = torch.distributions.Categorical(logits=l)
+            log_probs.append(dist.log_prob(acts[:, i]))
+            entropies.append(dist.entropy())
+        return sum(log_probs), sum(entropies)
 # rl_agent.py
 """
 Reinforcement learning agent — PPO with:
@@ -14,8 +48,95 @@ import torch.nn as nn
 import torch.optim as optim
 from typing import List, Tuple, Optional
 
+
+# --- RL Agent Config ---
 OBS_DIM = 18   # pos(2), vel(2), airborne, damage, stocks, opp_pos(2), opp_vel(2), opp_damage, opp_stocks, dist, rel_x, rel_y, armed
 ACT_DIM = 16   # NLight,SLight,DLight,NHeavy,SHeavy,DHeavy,Nair,Sair,Dair,Jump,DJ,Dodge,Dash,WT,Pickup,NSig
+FRAMES_STACK = 4  # Default number of frames to stack for CNN/LSTM
+
+# --- Framestack Preprocessing ---
+class FrameStack:
+    def __init__(self, stack_size=FRAMES_STACK, obs_dim=OBS_DIM):
+        self.stack_size = stack_size
+        self.obs_dim = obs_dim
+        self.frames = []
+
+    def reset(self):
+        self.frames = []
+
+    def append(self, obs):
+        self.frames.append(obs)
+        if len(self.frames) > self.stack_size:
+            self.frames.pop(0)
+
+    def get(self):
+        # Pad with zeros if not enough frames
+        while len(self.frames) < self.stack_size:
+            self.frames.insert(0, [0.0]*self.obs_dim)
+        return [x for frame in self.frames for x in frame]
+
+# --- Model Architectures ---
+class CNNPolicyNet(nn.Module):
+    def __init__(self, obs_shape, act_dim):
+        super().__init__()
+        c, h, w = obs_shape
+        self.conv = nn.Sequential(
+            nn.Conv2d(c, 16, 3, stride=2), nn.ReLU(),
+            nn.Conv2d(16, 32, 3, stride=2), nn.ReLU(),
+            nn.Flatten()
+        )
+        conv_out_size = self._get_conv_out(obs_shape)
+        self.fc = nn.Linear(conv_out_size, act_dim)
+
+    def _get_conv_out(self, shape):
+        o = torch.zeros(1, *shape)
+        return self.conv(o).view(1, -1).size(1)
+
+    def forward(self, x):
+        x = self.conv(x)
+        return self.fc(x)
+
+class CNNLSTMPolicyNet(nn.Module):
+    def __init__(self, obs_shape, act_dim, hidden_size=128):
+        super().__init__()
+        c, h, w = obs_shape
+        self.conv = nn.Sequential(
+            nn.Conv2d(c, 16, 3, stride=2), nn.ReLU(),
+            nn.Conv2d(16, 32, 3, stride=2), nn.ReLU(),
+            nn.Flatten()
+        )
+        conv_out_size = self._get_conv_out(obs_shape)
+        self.lstm = nn.LSTM(conv_out_size, hidden_size, batch_first=True)
+        self.fc = nn.Linear(hidden_size, act_dim)
+
+    def _get_conv_out(self, shape):
+        o = torch.zeros(1, *shape)
+        return self.conv(o).view(1, -1).size(1)
+
+    def forward(self, x, hidden=None):
+        # x: (batch, seq, c, h, w)
+        b, t, c, h, w = x.size()
+        x = x.view(b*t, c, h, w)
+        x = self.conv(x)
+        x = x.view(b, t, -1)
+        if hidden is None:
+            out, hidden = self.lstm(x)
+        else:
+            out, hidden = self.lstm(x, hidden)
+        return self.fc(out[:, -1]), hidden
+
+# --- A2C Agent (Stub) ---
+class A2CAgent:
+    def __init__(self, obs_dim=OBS_DIM, act_dim=ACT_DIM):
+        # TODO: Implement A2C logic
+        pass
+
+# --- Recurrent PPO Agent (Stub) ---
+class RecurrentPPOAgent:
+    def __init__(self, obs_dim=OBS_DIM, act_dim=ACT_DIM):
+        # TODO: Implement PPO with LSTM
+        pass
+
 
 
 def _mlp(in_dim: int, out_dim: int, hidden: int = 256) -> nn.Sequential:
@@ -53,6 +174,33 @@ class ValueNet(nn.Module):
         return self.net(x).squeeze(-1)
 
 
+
+# --- RL Agent Factory ---
+def make_agent(algorithm="ppo", model="mlp", obs_dim=OBS_DIM, act_dim=ACT_DIM, framestack=1, obs_shape=None, action_space="discrete", action_dims=None):
+    """
+    algorithm: "ppo", "a2c", "dqn", "recurrentppo"
+    model: "mlp", "cnn", "cnnlstm"
+    action_space: "discrete" or "multidiscrete"
+    """
+    if algorithm == "ppo":
+        if action_space == "multidiscrete" and action_dims is not None:
+            return RLAgent(obs_dim, action_dims, policy_class=MultiDiscretePolicyNet, multidiscrete=True)
+        if model == "mlp":
+            return RLAgent(obs_dim, act_dim)
+        elif model == "cnn":
+            return RLAgent(obs_dim, act_dim, policy_class=CNNPolicyNet, obs_shape=obs_shape)
+        elif model == "cnnlstm":
+            return RLAgent(obs_dim, act_dim, policy_class=CNNLSTMPolicyNet, obs_shape=obs_shape)
+    elif algorithm == "a2c":
+        return A2CAgent(obs_dim, act_dim)
+    elif algorithm == "dqn":
+        return BTRAgent(obs_dim, act_dim)
+    elif algorithm == "recurrentppo":
+        return RecurrentPPOAgent(obs_dim, act_dim)
+    else:
+        raise ValueError(f"Unknown algorithm: {algorithm}")
+
+# --- RLAgent (PPO, now supports custom policy class) ---
 class RLAgent:
     """
     PPO agent with GAE, entropy bonus, gradient clipping, multi-epoch updates.
@@ -69,32 +217,39 @@ class RLAgent:
     PPO_EPOCHS  = 4       # update passes per batch
     LR          = 3e-4
 
-    def __init__(self, obs_dim: int = OBS_DIM, act_dim: int = ACT_DIM):
+    def __init__(self, obs_dim: int = OBS_DIM, act_dim: int = ACT_DIM, policy_class=PolicyNet, obs_shape=None, multidiscrete=False):
         self.obs_dim = obs_dim
         self.act_dim = act_dim
-        self.policy = PolicyNet(obs_dim, act_dim)
+        self.multidiscrete = multidiscrete
+        if multidiscrete and isinstance(act_dim, list):
+            self.policy = policy_class(obs_dim, act_dim)
+        elif obs_shape is not None:
+            self.policy = policy_class(obs_shape, act_dim)
+        else:
+            self.policy = policy_class(obs_dim, act_dim)
         self.value  = ValueNet(obs_dim)
-        # Shared optimizer over both networks
         self.optimizer = optim.Adam(
             list(self.policy.parameters()) + list(self.value.parameters()),
             lr=self.LR, eps=1e-5
         )
         self.buffer: List[dict] = []
-        # Cumulative training stats
         self.total_steps   = 0
         self.total_updates = 0
         self.episode_count = 0
-        self.episode_rewards: List[float] = []   # reward per finished episode
+        self.episode_rewards: List[float] = []
         self._ep_reward = 0.0
 
-    def select_action(self, obs: List[float]) -> Tuple[int, float]:
+    def select_action(self, obs: List[float]) -> Tuple[object, float]:
         t = torch.tensor(obs, dtype=torch.float32)
         with torch.no_grad():
             action, log_prob = self.policy.act(t)
             value = self.value(t).item()
-        return action, log_prob.item()
+        if self.multidiscrete:
+            return action, log_prob.item()
+        else:
+            return action, log_prob.item()
 
-    def store(self, obs: List[float], action: int, reward: float,
+    def store(self, obs: List[float], action: object, reward: float,
               log_prob: float, done: bool):
         self._ep_reward += reward
         if done:
