@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Striker The Enlightened",
+  "productName": "Flow Master",
   "version": "1.0.0",
-  "identifier": "com.striker.enlightened",
+  "identifier": "com.flowmaster.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:4321",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Striker — The Enlightened",
+        "title": "Flow Master",
         "width": 1100,
         "height": 700,
         "resizable": true,
@@ -26,9 +26,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": [
-      "../dist/striker-server/**/*"
-    ],
+    "resources": [],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
