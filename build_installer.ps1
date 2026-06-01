@@ -1,9 +1,9 @@
 # build_installer.ps1
 # ===================
-# Full build pipeline for Striker — The Enlightened
+# Full build pipeline for Flow Master
 #
 # Produces a single Windows installer:
-#   src-tauri\target\release\bundle\nsis\Striker The Enlightened_1.0.0_x64-setup.exe
+#   src-tauri\target\release\bundle\nsis\Flow Master_1.0.0_x64-setup.exe
 #
 # What it does:
 #   1. Checks prerequisites (Python venv, npm, cargo)
@@ -37,7 +37,7 @@ function Write-Fail  { param($msg) Write-Host "     ERR $msg" -ForegroundColor R
 
 Write-Host ""
 Write-Host "  ==========================================" -ForegroundColor Magenta
-Write-Host "   Striker The Enlightened — Build Installer" -ForegroundColor Magenta
+Write-Host "   Flow Master — Build Installer" -ForegroundColor Magenta
 Write-Host "  ==========================================" -ForegroundColor Magenta
 Write-Host ""
 
@@ -139,7 +139,7 @@ $installer = Get-ChildItem -Path $bundleDir -Recurse -Filter "*setup.exe" -Error
              Select-Object -First 1
 $msi       = Get-ChildItem -Path $bundleDir -Recurse -Filter "*.msi" -ErrorAction SilentlyContinue |
              Select-Object -First 1
-$plainExe  = Join-Path $ProjectRoot "src-tauri\target\release\Striker The Enlightened.exe"
+$plainExe  = Join-Path $ProjectRoot "src-tauri\target\release\Flow Master.exe"
 
 Write-Host ""
 Write-Host "  ==========================================" -ForegroundColor Magenta
@@ -162,7 +162,7 @@ if (Test-Path $plainExe) {
 Write-Host ""
 Write-Host "  To install: run the setup.exe above." -ForegroundColor Cyan
 Write-Host "  The AI backend (striker-server.exe) starts automatically" -ForegroundColor Cyan
-Write-Host "  when you launch 'Striker The Enlightened'." -ForegroundColor Cyan
+Write-Host "  when you launch 'Flow Master'." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Stored data location (after first run):" -ForegroundColor DarkGray
 Write-Host "    <install dir>\striker-server\data\  — brain store, models" -ForegroundColor DarkGray

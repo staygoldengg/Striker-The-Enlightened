@@ -1,6 +1,6 @@
 # local_test.ps1
 # ─────────────────────────────────────────────────────────────────────────────
-# Striker — The Enlightened  |  Senior Tester One-Click Runner
+# Flow Master  |  Senior Tester One-Click Runner
 #
 # Usage:
 #   .\local_test.ps1              # Start server, run all tests, stop server
@@ -46,7 +46,7 @@ function Test-ServerAlive {
 # ── Header ────────────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "  ============================================================" -ForegroundColor Cyan
-Write-Host "  Striker — The Enlightened  |  Local Client Test Runner" -ForegroundColor Cyan
+Write-Host "  Flow Master  |  Local Client Test Runner" -ForegroundColor Cyan
 Write-Host "  ============================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Python  : $PythonExe" -ForegroundColor DarkGray
@@ -63,7 +63,7 @@ if (-not $NoServer) {
     if (Test-ServerAlive) {
         Write-Ok "Server already running on port $ServerPort."
     } else {
-        Write-Header "Starting Striker AI backend..."
+        Write-Header "Starting Flow Master AI backend..."
         $ServerProcess = Start-Process `
             -FilePath $PythonExe `
             -ArgumentList "server_entry.py" `

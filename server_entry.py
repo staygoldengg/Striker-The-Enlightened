@@ -1,7 +1,7 @@
 """
 server_entry.py
 ---------------
-PyInstaller entry point for the Striker AI backend server.
+PyInstaller entry point for the Flow Master AI backend server.
 
 When frozen into striker-server.exe, this script:
   1. Resolves the project root (next to the exe OR the real cwd in dev mode).
@@ -30,13 +30,13 @@ from pathlib import Path
 if getattr(sys, "frozen", False):
     _EXE_DIR = Path(sys.executable).parent
     sys.path.insert(0, str(sys._MEIPASS))  # type: ignore[attr-defined]
-    os.environ.setdefault("STRIKER_DATA_DIR", str(_EXE_DIR / "data"))
+    os.environ.setdefault("FLOWMASTER_DATA_DIR", str(_EXE_DIR / "data"))
 else:
     _EXE_DIR = Path(__file__).parent
     sys.path.insert(0, str(_EXE_DIR))
 
 # ── Brain store data-dir override ─────────────────────────────────────────────
-_data_dir = Path(os.environ.get("STRIKER_DATA_DIR", str(_EXE_DIR / "weaponized_ai" / "brain")))
+_data_dir = Path(os.environ.get("FLOWMASTER_DATA_DIR", str(_EXE_DIR / "weaponized_ai" / "brain")))
 _data_dir.mkdir(parents=True, exist_ok=True)
 
 # ── Logging ────────────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         log.info("Port 8000 already bound — server already running, exiting.")
         sys.exit(0)
 
-    log.info("Striker AI backend starting on http://127.0.0.1:8000")
+    log.info("Flow Master AI backend starting on http://127.0.0.1:8000")
     log.info("Data directory: %s", _data_dir)
 
     try:
@@ -93,6 +93,6 @@ if __name__ == "__main__":
             access_log=True,
         )
     except Exception as exc:
-        log.critical("Striker backend crashed: %s", exc, exc_info=True)
+        log.critical("Flow Master backend crashed: %s", exc, exc_info=True)
         _write_crash_log(exc)
         sys.exit(1)

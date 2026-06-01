@@ -1,6 +1,6 @@
 # striker_service.py
 """
-Striker The Enlightened — background service entry point.
+Flow Master — background service entry point.
 
 Responsibilities:
   - Bootstrap the persistent configuration store.
@@ -31,7 +31,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
 )
-log = logging.getLogger("striker_service")
+log = logging.getLogger("flow_master_service")
 
 # ── Watchdog tunables ─────────────────────────────────────────────────────────
 _SERVER_HOST           = "127.0.0.1"
@@ -87,7 +87,7 @@ def _run_service() -> None:
     restart_count   = 0
     back_off        = _RESTART_BACK_OFF_BASE
 
-    log.info("Striker Core background service is fully operational.")
+    log.info("Flow Master background service is fully operational.")
 
     while not _shutdown[0]:
         # ── Ensure backend is alive ───────────────────────────────────────────
@@ -153,7 +153,7 @@ def _run_service() -> None:
         except subprocess.TimeoutExpired:
             backend_proc.kill()
 
-    log.info("Striker service shut down cleanly.")
+    log.info("Flow Master service shut down cleanly.")
 
 
 if __name__ == "__main__":

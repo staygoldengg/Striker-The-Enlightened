@@ -1,8 +1,8 @@
 # config_manager.py
 """
-PersistentStorageEngine — JSON-backed settings store for Striker.
+PersistentStorageEngine — JSON-backed settings store for Flow Master.
 
-Settings are persisted in %APPDATA%\\StrikerEnlightened\\user_settings.json
+Settings are persisted in %APPDATA%\\FlowMaster\\user_settings.json
 and survive across sessions.  Any missing key falls back to the built-in
 defaults defined below.
 """
@@ -21,7 +21,7 @@ class PersistentStorageEngine:
         "emergency_panic_key": "ESCAPE",
     }
 
-    def __init__(self, app_name: str = "StrikerEnlightened"):
+    def __init__(self, app_name: str = "FlowMaster"):
         # Resolve %APPDATA% safely; fall back to home directory
         self.base_dir = Path(os.getenv("APPDATA") or Path.home()) / app_name
         self.base_dir.mkdir(parents=True, exist_ok=True)

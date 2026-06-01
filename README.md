@@ -1,4 +1,4 @@
-﻿# Striker — The Enlightened
+﻿# Flow Master
 
 A fully autonomous AI combat training suite for Brawlhalla. The system reads raw game state directly from the process's memory, injects hardware-level keystrokes through the Win32 API, learns from its own mistakes via Proximal Policy Optimization, absorbs human expert knowledge from YouTube videos and real match replays, and packages everything into a native Windows desktop application built on React and Tauri.
 
@@ -37,7 +37,7 @@ With a seeded policy, the system enters live self-play:
 
 The system stays running between matches:
 
-- `PersistentStorageEngine` writes user settings to `%APPDATA%\StrikerEnlightened\user_settings.json`.
+- `PersistentStorageEngine` writes user settings to `%APPDATA%\FlowMaster\user_settings.json`.
 - `BrainStore` accumulates the knowledge base, BC corpus, and video registry across sessions so nothing is re-learned from scratch after a restart.
 - `ReplayDesyncValidator` verifies that the internal physics simulation stays aligned with ground-truth binary events (KO count and frame drift checks) and flags desync before it can corrupt the training signal.
 - `AutonomousSessionManager` wraps every training context as a Python context manager: on clean exit **or** crash, `emergency_flush()` is called unconditionally so the keyboard always returns to normal.
@@ -240,11 +240,11 @@ The project ships as a single Windows installer built by `build_installer.ps1`:
 **What it does:**
 
 1. **PyInstaller** (`striker_server.spec`) bundles the entire Python backend — FastAPI, PyTorch, weaponized_ai — into `dist/striker-server/striker-server.exe` (onedir, not onefile, for faster cold start).
-2. **`server_entry.py`** is the PyInstaller entry point. It bootstraps `sys._MEIPASS` path resolution, sets `STRIKER_DATA_DIR` in the environment so `BrainStore` writes to `%APPDATA%\StrikerEnlightened` instead of inside the frozen bundle, and starts uvicorn.
+2. **`server_entry.py`** is the PyInstaller entry point. It bootstraps `sys._MEIPASS` path resolution, sets `STRIKER_DATA_DIR` in the environment so `BrainStore` writes to `%APPDATA%\FlowMaster` instead of inside the frozen bundle, and starts uvicorn.
 3. **`npm run tauri build`** compiles the React frontend and links it with the Rust Tauri shell. Tauri's `resources` config copies `dist/striker-server/**/*` into the installer.
 4. The Tauri `lib.rs` calls `auto_start_server()` at startup: it locates `striker-server.exe` inside the resource directory (or falls back to `src-tauri/target/debug/` for dev builds), spawns it as a hidden child process, and registers a `stop_ai_server` command that terminates it on app exit.
 
-Output: `src-tauri/target/release/bundle/nsis/Striker The Enlightened_x.y.z_x64-setup.exe`
+Output: `src-tauri/target/release/bundle/nsis/Flow Master_x.y.z_x64-setup.exe`
 
 **Skip flags:**
 
@@ -832,7 +832,7 @@ On clean exit **and** on any exception, `emergency_flush()` is called before the
 
 **File:** `weaponized_ai/config_manager.py`
 
-`PersistentStorageEngine` stores user settings in `%APPDATA%\StrikerEnlightened\user_settings.json`. Default settings:
+`PersistentStorageEngine` stores user settings in `%APPDATA%\FlowMaster\user_settings.json`. Default settings:
 
 | Key | Default | Description |
 |-----|---------|-------------|

@@ -32,7 +32,7 @@ from typing import Dict, List, Tuple, Optional, Any
 import numpy as np
 
 BRAIN_DIR  = Path(
-    os.environ.get("STRIKER_DATA_DIR") or (Path(__file__).parent / "brain")
+    os.environ.get("FLOWMASTER_DATA_DIR") or (Path(__file__).parent / "brain")
 )
 MAX_CORPUS = 50_000   # maximum transitions kept on disk
 
