@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import { LEGACY_API_BASE } from './config'
 
 const DEFAULT_SERVER_DIR =
   'C:\\Users\\carli\\OneDrive\\Documents\\My Mods\\sdlarch-rl-master'
@@ -54,7 +55,7 @@ export default function BackendBridge() {
           }
           const hasAny = Object.values(cfg).some(v => v.length > 0)
           if (hasAny) {
-            fetch('http://localhost:5000/api/meta/config', {
+            fetch(`${LEGACY_API_BASE}/api/meta/config`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(cfg),

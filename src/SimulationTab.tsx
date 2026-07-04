@@ -8,8 +8,9 @@
  *               → shm_write_sim_state (ctypes memmove, ~1µs) → C++ reads next poll.
  */
 import { useState, useCallback, useEffect } from 'react'
+import { LEGACY_API_BASE } from './config'
 
-const API = 'http://localhost:5000'
+const API = LEGACY_API_BASE
 
 // ── Types matching the Flask API ─────────────────────────────────────────────
 type VeraWeapon    = 'Scythe' | 'Chakram'

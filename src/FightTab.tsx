@@ -10,8 +10,10 @@ import {
   type InferResult, type LoopStatus, type OBSStatus, type AgentStats, type VideoStatus,
   type BrainInfo, type ReplayScanResult, type MemoryInfo, type BTRStats,
 } from './WeaponizedAPI'
+import { useEventSource } from './hooks/useEventSource'
+import { LEGACY_API_BASE, LEGACY_LOG_STREAM } from './config'
 
-const API = 'http://localhost:5000'
+const API = LEGACY_API_BASE
 
 // ── useMetaUpdates ────────────────────────────────────────────────────────────
 // Polls /api/meta/latest every 60 s and reflects current weapon trends +
@@ -82,8 +84,24 @@ export default function FightTab() {
   const [log, setLog] = useState<string[]>([])
   const [connected, setConnected] = useState(false)
   const [hitResult, setHitResult] = useState<{ result: string; accuracy: number } | null>(null)
-  const esRef = useRef<EventSource | null>(null)
   const meta = useMetaUpdates(60_000)
+  const logStreamStatus = useEventSource(
+    `${LEGACY_LOG_STREAM}`,
+    (e) => {
+      if (memPollRef.current) clearInterval(memPollRef.current)
+      try {
+        const msg = JSON.parse(e.data) as string
+        setLog(l => [msg, ...l].slice(0, 60))
+        setConnected(true)
+      } catch {
+        // ignore malformed messages
+      }
+    },
+    {
+      onOpen: () => setConnected(true),
+      onError: () => setConnected(false),
+    }
+  )
 
   // ── Weaponized AI state ────────────────────────────────────────────────────
   const [aiOnline, setAiOnline] = useState(false)
@@ -138,18 +156,7 @@ export default function FightTab() {
 
   useEffect(() => {
     pollStatus()
-    const id = setInterval(pollStatus, 2000)
-    const es = new EventSource(`${API}/api/log-stream`)
-    esRef.current = es
-    es.onopen = () => setConnected(true)
-    es.onerror = () => setConnected(false)
-    es.onmessage = (e) => {
-      if (memPollRef.current) clearInterval(memPollRef.current)
-      try {
-        const msg = JSON.parse(e.data) as string
-        setLog(l => [msg, ...l].slice(0, 60))
-      } catch {}
-    }
+    const id = setInterval(pollStatus, logStreamStatus === 'open' ? 5000 : 2000)
     // Check weaponized AI server
     checkHealth().then(() => {
       setAiOnline(true)
@@ -158,11 +165,11 @@ export default function FightTab() {
       rlStats().then(setAgentStats).catch(() => {})
     }).catch(() => setAiOnline(false))
     return () => {
-      clearInterval(id); es.close()
+      clearInterval(id)
       if (loopPollRef.current) clearInterval(loopPollRef.current)
       if (obsInstallPollRef.current) clearInterval(obsInstallPollRef.current)
     }
-  }, [])
+  }, [logStreamStatus])
 
   async function pollStatus() {
     try {

@@ -15,6 +15,7 @@ import MacroEditor from './components/MacroEditor'
 import GlossaryPanel from './components/GlossaryPanel'
 import SettingsPanel from './components/SettingsPanel'
 import type { AppTab, Macro, OcrRegion, WeaponTemplate } from './types'
+import { LEGACY_API_BASE } from './config'
 import { DEFAULT_MACROS, defaultMacro, DEFAULT_OCR_REGION, defaultScoutState, MOVE_GROUPS } from './data'
 
 type MacroForm = Omit<Macro, 'id' | 'running'>
@@ -63,7 +64,7 @@ function App() {
     localStorage.setItem('ocr_region', JSON.stringify(ocrRegion))
 
     try {
-      await fetch('http://localhost:5000/api/meta/config', {
+      await fetch(`${LEGACY_API_BASE}/api/meta/config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,7 +73,7 @@ function App() {
           twitch_client_secret: twitchClientSecret,
         }),
       })
-      await fetch('http://localhost:5000/api/meta/ocr-region', {
+      await fetch(`${LEGACY_API_BASE}/api/meta/ocr-region`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ocrRegion),

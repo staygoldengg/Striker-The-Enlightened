@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import LatencyMonitor from './LatencyMonitor'
+import { LEGACY_API_BASE } from './config'
 
-const API = 'http://localhost:5000'
+const API = LEGACY_API_BASE
 
 // ── useLiveIndex ──────────────────────────────────────────────────────────────
 // Sends a live screenshot to /api/translate/index and returns the current

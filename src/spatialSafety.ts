@@ -7,7 +7,9 @@
  *   • Run a periodic system tick that feeds state to the C++ master loop
  */
 
-const API = 'http://localhost:5000'
+import { LEGACY_API_BASE } from './config'
+
+const API = LEGACY_API_BASE
 
 export type SimulationState = {
   playerX: number

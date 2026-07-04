@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
+import { LEGACY_API_BASE } from './config'
 
-const API = 'http://localhost:5000'
+const API = LEGACY_API_BASE
 
 type OmniBlock = Record<string, unknown>
 type Rec = {

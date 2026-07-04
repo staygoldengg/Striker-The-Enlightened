@@ -3,9 +3,11 @@
  * Polls /api/latency/benchmark on demand and /api/spatial/telemetry every 2 s.
  * Shows per-stage ms + a STALE warning when total > 100 ms.
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
+import { useSpatialTelemetry } from './hooks/useLegacyTelemetry'
+import { LEGACY_API_BASE } from './config'
 
-const API = 'http://localhost:5000'
+const API = LEGACY_API_BASE
 
 type LatencyMetrics = {
   capture_ms?: number
@@ -15,32 +17,10 @@ type LatencyMetrics = {
   error?: string
 }
 
-type Telemetry = {
-  x?: number
-  y?: number
-  frame?: number
-  lookahead?: number
-  weapon?: number
-  error?: string
-}
-
 export default function LatencyMonitor() {
   const [metrics, setMetrics]     = useState<LatencyMetrics>({})
-  const [telemetry, setTelemetry] = useState<Telemetry>({})
   const [running, setRunning]     = useState(false)
-
-  const fetchTelemetry = useCallback(async () => {
-    try {
-      const r = await fetch(`${API}/api/spatial/telemetry`)
-      if (r.ok) setTelemetry(await r.json())
-    } catch {}
-  }, [])
-
-  useEffect(() => {
-    fetchTelemetry()
-    const id = setInterval(fetchTelemetry, 2000)
-    return () => clearInterval(id)
-  }, [fetchTelemetry])
+  const { telemetry, streamStatus } = useSpatialTelemetry(1000)
 
   async function runBenchmark() {
     setRunning(true)
@@ -99,6 +79,10 @@ export default function LatencyMonitor() {
       )}
 
       {/* Spatial telemetry */}
+      <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>
+        Stream: <b>{streamStatus === 'open' ? 'Live' : 'Fallback'}</b>
+        {streamStatus === 'error' && ' — fallback polling active'}
+      </div>
       {!telemetry.error && (
         <div className="telemetry-row">
           <span className="tel-item">X: <b>{telemetry.x?.toFixed(1) ?? '—'}</b></span>
