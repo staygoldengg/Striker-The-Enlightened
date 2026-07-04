@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Flow Master",
+  "productName": "Omni-Striker",
   "version": "1.0.0",
-  "identifier": "com.flowmaster.desktop",
+  "identifier": "com.omni-striker.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:4321",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Flow Master",
+        "title": "Omni-Striker",
         "width": 1100,
         "height": 700,
         "resizable": true,

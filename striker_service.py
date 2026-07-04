@@ -1,6 +1,6 @@
 # striker_service.py
 """
-Flow Master — background service entry point.
+Omni-Striker — background service entry point.
 
 Responsibilities:
   - Bootstrap the persistent configuration store.
@@ -87,7 +87,7 @@ def _run_service() -> None:
     restart_count   = 0
     back_off        = _RESTART_BACK_OFF_BASE
 
-    log.info("Flow Master background service is fully operational.")
+    log.info("Omni-Striker background service is fully operational.")
 
     while not _shutdown[0]:
         # ── Ensure backend is alive ───────────────────────────────────────────
@@ -153,7 +153,7 @@ def _run_service() -> None:
         except subprocess.TimeoutExpired:
             backend_proc.kill()
 
-    log.info("Flow Master service shut down cleanly.")
+    log.info("Omni-Striker service shut down cleanly.")
 
 
 if __name__ == "__main__":

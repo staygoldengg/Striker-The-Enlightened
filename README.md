@@ -1,4 +1,4 @@
-﻿# Flow Master
+﻿# Omni-Striker
 
 A fully autonomous AI combat training suite for Brawlhalla. The system reads raw game state directly from the process's memory, injects hardware-level keystrokes through the Win32 API, learns from its own mistakes via Proximal Policy Optimization, absorbs human expert knowledge from YouTube videos and real match replays, and packages everything into a native Windows desktop application built on React and Tauri.
 
@@ -37,7 +37,7 @@ With a seeded policy, the system enters live self-play:
 
 The system stays running between matches:
 
-- `PersistentStorageEngine` writes user settings to `%APPDATA%\FlowMaster\user_settings.json`.
+- `PersistentStorageEngine` writes user settings to `%APPDATA%\OmniStriker\user_settings.json`.
 - `BrainStore` accumulates the knowledge base, BC corpus, and video registry across sessions so nothing is re-learned from scratch after a restart.
 - `ReplayDesyncValidator` verifies that the internal physics simulation stays aligned with ground-truth binary events (KO count and frame drift checks) and flags desync before it can corrupt the training signal.
 - `AutonomousSessionManager` wraps every training context as a Python context manager: on clean exit **or** crash, `emergency_flush()` is called unconditionally so the keyboard always returns to normal.
@@ -240,11 +240,11 @@ The project ships as a single Windows installer built by `build_installer.ps1`:
 **What it does:**
 
 1. **PyInstaller** (`striker_server.spec`) bundles the entire Python backend — FastAPI, PyTorch, weaponized_ai — into `dist/striker-server/striker-server.exe` (onedir, not onefile, for faster cold start).
-2. **`server_entry.py`** is the PyInstaller entry point. It bootstraps `sys._MEIPASS` path resolution, sets `STRIKER_DATA_DIR` in the environment so `BrainStore` writes to `%APPDATA%\FlowMaster` instead of inside the frozen bundle, and starts uvicorn.
+2. **`server_entry.py`** is the PyInstaller entry point. It bootstraps `sys._MEIPASS` path resolution, sets `OMNISTR_DATA_DIR` in the environment so `BrainStore` writes to `%APPDATA%\OmniStriker` instead of inside the frozen bundle, and starts uvicorn.
 3. **`npm run tauri build`** compiles the React frontend and links it with the Rust Tauri shell. Tauri's `resources` config copies `dist/striker-server/**/*` into the installer.
 4. The Tauri `lib.rs` calls `auto_start_server()` at startup: it locates `striker-server.exe` inside the resource directory (or falls back to `src-tauri/target/debug/` for dev builds), spawns it as a hidden child process, and registers a `stop_ai_server` command that terminates it on app exit.
 
-Output: `src-tauri/target/release/bundle/nsis/Flow Master_x.y.z_x64-setup.exe`
+Output: `src-tauri/target/release/bundle/nsis/Omni-Striker_x.y.z_x64-setup.exe`
 
 **Skip flags:**
 
@@ -832,7 +832,7 @@ On clean exit **and** on any exception, `emergency_flush()` is called before the
 
 **File:** `weaponized_ai/config_manager.py`
 
-`PersistentStorageEngine` stores user settings in `%APPDATA%\FlowMaster\user_settings.json`. Default settings:
+`PersistentStorageEngine` stores user settings in `%APPDATA%\OmniStriker\user_settings.json`. Default settings:
 
 | Key | Default | Description |
 |-----|---------|-------------|
@@ -858,7 +858,7 @@ Persistent storage for all accumulated AI knowledge. All files in `weaponized_ai
 | `corpus.npz` | NumPy compressed | BC transitions: `obs, acts, rwds, next_obs, dones, weights` (capped at 50,000) |
 | `registry.json` | JSON list | Per-video metadata (URL, title, date, transitions, Whisper used) |
 
-`BRAIN_DIR` reads from the `STRIKER_DATA_DIR` environment variable (set by `server_entry.py` when frozen by PyInstaller) so data always writes to `%APPDATA%` regardless of install location.
+`BRAIN_DIR` reads from the `OMNISTR_DATA_DIR` environment variable (set by `server_entry.py` when frozen by PyInstaller) so data always writes to `%APPDATA%` regardless of install location.
 
 ---
 
@@ -1086,7 +1086,7 @@ These bugs were identified during development and corrected. All fixes are docum
 ```
 Striker-The-Enlightened/
 ├── start_server.ps1              ← One-click server launcher
-├── server_entry.py               ← PyInstaller entry point (sets STRIKER_DATA_DIR)
+├── server_entry.py               ← PyInstaller entry point (sets OMNISTR_DATA_DIR)
 ├── striker_server.spec           ← PyInstaller onedir bundle spec
 ├── build_installer.ps1           ← Full build pipeline (PyInstaller + Tauri)
 ├── striker_service.py            ← Background priority service runner

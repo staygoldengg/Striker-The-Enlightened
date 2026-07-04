@@ -22,7 +22,7 @@
 #include <iostream>
 
 #define SHM_POOL_SIZE 4096
-#define SHM_NAME      "Local\\FlowMasterBridge"
+#define SHM_NAME      "Local\\OmniStrikerBridge"
 
 // ── State buffer layout ───────────────────────────────────────────────────────
 // #pragma pack(push, 1) ensures no compiler padding so byte offsets are stable
